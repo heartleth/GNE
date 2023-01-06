@@ -12,7 +12,7 @@ PART KIdent
 END
 
 PART Ident
-	DENSE name	|>*ichar
+	DENSE name	|>*until.sym
 END
 
 PART Expression
@@ -62,7 +62,12 @@ PART Expression
 END
 
 PART String
-	RULE str *t =>*schar *t
+	RULE str	*t =>*until.qt *t
+END
+
+PART Comment
+	RULE cmt	/ㄹ-start =>*until.ebc ㄹ/-end
+	RULE cmt	//-start =>*until.elc
 END
 
 PART ExpressionList
@@ -79,9 +84,12 @@ PART TopStatement
 	RULE fdef		$FunctionDefinition
 	RULE z_struct	$Ident $Ident $ClassSpecifyBlock
 	RULE imports	입당-t $ImportName ;-es
+	RULE comment	$Comment
 END
 
 PART Statement
+	RULE comment	$Comment
+	
 	IF :0 se
 		RULE exp 	$Expression ?;-es
 	END
@@ -108,6 +116,8 @@ PART Members
 	RULE vari	공천-var $Ident *particles 이것이다-t $Expression ;-es
 	RULE varl	공천-var $Ident *olb *clb ;-es
 	RULE var	공천-var $Ident ;-es
+	
+	RULE comment	$Comment
 END
 
 PART ImportName

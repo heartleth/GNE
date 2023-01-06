@@ -60,9 +60,6 @@ fn cache_register(l :usize, rulehash :String, tree :Option<(SyntaxTreeNode, usiz
     }
 }
 
-static IFC :&str = "!@#$%^&*()-_=+[]{}\";:'\\/|?.,<>`~";
-static SFC :&str = "\"";
-
 pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, rules :PhraseRulesCollection<'p>, dict :&'p Dictionary<'p>, cargs :&Vec<&'p str>, pid :&str, allow_ws :bool) -> Option<(SyntaxTreeNode, usize)> {
     let rulehash = parsingrule_tostr(rule) + &pid;
     let cachev = cache_view(s.len(), &rulehash);
@@ -85,8 +82,12 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                 }
                 else {
                     let mut has_ws = false;
-                    let untrimmed_reading = expect.reading;
+                    let mut did_nl = false;
+                    // let untrimmed_reading = expect.reading;
                     while s[expect.reading] == ' ' || s[expect.reading] == '\r' || s[expect.reading] == '\n' || s[expect.reading] == '\t' {
+                        if s[expect.reading] == '\n' {
+                            did_nl = true;
+                        }
                         expect.read(1);
                         has_ws = true;
                     }
@@ -94,6 +95,9 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
 
                     match &prule.template {
                         Text(t) => {
+                            if !allow_ws && has_ws {
+                                expect.kill();
+                            }
                             if s[reading..].starts_with(&t.text) && (allow_ws || !has_ws) {
                                 expect.read(t.text.len());
                                 expect.next_rule();
@@ -107,27 +111,29 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                             if !allow_ws && has_ws {
                                 expect.kill();
                             }
-                            else if p.part_name == "ichar" {
-                                if !IFC.contains(s[reading]) {
+                            else if p.part_name == "nl" {
+                                if did_nl {
                                     expect.push_category(SyntaxTreeNode::new_morpheme(
-                                        String::from("c"),
-                                        String::from_iter(&s[reading..reading+1])));
-                                    expect.read(1);
-                                    expect.next_rule();
+                                        String::from("ws"),
+                                        String::from("\n")));
                                 }
                                 else {
                                     expect.kill();
                                 }
                             }
-                            else if p.part_name == "schar" {
-                                if !SFC.contains(s[reading]) {
-                                    if has_ws {
-                                        expect.push_category(SyntaxTreeNode::new_morpheme(
-                                            String::from("ws"),
-                                            String::from_iter(&s[untrimmed_reading..reading])));
+                            else if p.part_name.starts_with("until.") {
+                                let mut pass = true;
+                                for c in &dict[&p.part_name[6..]] {
+                                    if &c.text == &['\\', 'n'] && did_nl {
+                                        pass = false;
                                     }
+                                    else if &s[reading..reading+1] == &c.text[..] {
+                                        pass = false;
+                                    }
+                                }
+                                if pass {
                                     expect.push_category(SyntaxTreeNode::new_morpheme(
-                                        String::from("c"),
+                                        String::from("ignore"),
                                         String::from_iter(&s[reading..reading+1])));
                                     expect.read(1);
                                     expect.next_rule();

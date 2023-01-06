@@ -23,9 +23,9 @@ class Expression:
         return 'false'
     def new(_, cname, __, *el):
         if len(el) == 2:
-            return 'new '+ cname() + '(' + el[0]() + ')'
+            return 'new C_'+ cname() + '(' + el[0]() + ')'
         else:
-            return 'new '+ cname() + '()'
+            return 'new C_'+ cname() + '()'
     def p(_, x, __):
         return '(' + x() + ')'
     def assigna(_, a, _1, _2, _3, b):
@@ -74,6 +74,7 @@ class ParameterList:
 class Ident:
     def name(*chars):
         s = ''.join(str('_' if c() == '-' else c()) for c in chars)
+        s = s.replace('법', '목욕탕')
         objdict = {
             '콘솔': 'console',
             '로그': 'log'
@@ -106,6 +107,8 @@ class Statement:
         return ''
     def acomplete(*a):
         return 'break;'
+    def comment(*c):
+        return ''
 
 class Else:
     def elses(_, s):
@@ -115,11 +118,13 @@ class TopStatement:
     def a_society(*s):
         return s[-1]()
     def z_struct(_, name, block):
-        return 'class ' + name() + block()
+        return 'class C_' + name() + block()
     def imports(_, name):
         return 'import ' + name() + '.'
     def fdef(fd):
         return fd()
+    def comment(*c):
+        return ''
 
 class Statements:
     def sts(*s):
@@ -143,3 +148,9 @@ class Members:
         return 'this.' + name() + '=[];'
     def var(_, name, __):
         return 'this.' + name() + '=0;'
+    def comment(*c):
+        return ''
+
+class Comment:
+    def cmt(*s):
+        return ''
