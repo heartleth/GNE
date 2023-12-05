@@ -107,6 +107,8 @@ class Statement:
         return ''
     def acomplete(*a):
         return 'break;'
+    def exit(*c):
+        return 'process.exit();'
     def comment(*c):
         return ''
 

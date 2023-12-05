@@ -1,4 +1,3 @@
-@echo off
-cargo run --quiet %* > NUL
+target\release\pr.exe %* > NUL
 node l.js
 del l.js

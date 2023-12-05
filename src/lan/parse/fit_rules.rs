@@ -83,7 +83,7 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                 else {
                     let mut has_ws = false;
                     let mut did_nl = false;
-                    // let untrimmed_reading = expect.reading;
+                    let untrimmed_reading = expect.reading;
                     while s[expect.reading] == ' ' || s[expect.reading] == '\r' || s[expect.reading] == '\n' || s[expect.reading] == '\t' {
                         if s[expect.reading] == '\n' {
                             did_nl = true;
@@ -132,6 +132,11 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                                     }
                                 }
                                 if pass {
+                                    if has_ws {
+                                        expect.push_category(SyntaxTreeNode::new_morpheme(
+                                            String::from("ignore"),
+                                            String::from_iter(&s[untrimmed_reading..reading])));
+                                    }
                                     expect.push_category(SyntaxTreeNode::new_morpheme(
                                         String::from("ignore"),
                                         String::from_iter(&s[reading..reading+1])));

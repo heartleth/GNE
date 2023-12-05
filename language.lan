@@ -101,6 +101,7 @@ PART Statement
 		RULE whiles		될때까지-t (-o $Expression )-c $StatementBlock
 		RULE itscat		판사님,-t 고양이(-t $Ident )가-t 했습니다.-t
 		RULE acomplete	완료-t ;-es
+		RULE exit		고심-t 끝에-t 프로세스-t 해체-t ;-es
 	END
 END
 
