@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XOXO Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+        }
+        .box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 100px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #000;
+            transition: background-color 0.3s;
+        }
+        .box:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game"></div>
+    <script>
+        const game = document.querySelector('.game');
+        let player = 'X';
+        let count = 0;
+
+        function drawBoard() {
+            for (let i = 0; i < 9; i++) {
+                const box = document.createElement('div');
+                box.classList.add('box');
+                box.setAttribute('id', i);
+                box.addEventListener('click', turnClick);
+                game.appendChild(box);
+            }
+        }
+
+        function turnClick(event) {
+            const id = event.target.id;
+            if (game[id].innerHTML !== '') return;
+            game[id].innerHTML = player;
+            game[id].removeEventListener('click', turnClick);
+            count++;
+            checkWinner();
+            player = player === 'X' ? 'O' : 'X';
+        }
+
+        function checkWinner() {
+            const lines = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],dk
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+            for (let line of lines) {
+                const [a, b, c] = line;
+                if (
+                    game[a].innerHTML &&
+                    game[a].innerHTML === game[b].innerHTML &&
+                    game[a].innerHTML === game[c].innerHTML
+                ) {
+                    alert(`Player ${game[a].innerHTML} wins!`);
+                    game.innerHTML = '';
+                    drawBoard();
+                    return;
+                }
+            }
+            if (count === 9) {
+                alert('It\'s a tie!');
+                game.innerHTML = '';
+                drawBoard();
+            }
+        }
+
+        drawBoard();
+    </script>
+</body>
+</html>

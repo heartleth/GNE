@@ -7,6 +7,7 @@ use std::collections::HashMap;
 pub use expect::Expectation;
 use super::SyntaxTreeNode;
 use super::ParsingRule;
+use super::ParseError;
 use expect::nexts;
 use super::parse;
 
@@ -60,15 +61,16 @@ fn cache_register(l :usize, rulehash :String, tree :Option<(SyntaxTreeNode, usiz
     }
 }
 
-pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, rules :PhraseRulesCollection<'p>, dict :&'p Dictionary<'p>, cargs :&Vec<&'p str>, pid :&str, allow_ws :bool) -> Option<(SyntaxTreeNode, usize)> {
+pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, rules :PhraseRulesCollection<'p>, dict :&'p Dictionary<'p>, cargs :&Vec<&'p str>, pid :&str, allow_ws :bool) -> Result<(SyntaxTreeNode, usize), ParseError<'p>> {
     let rulehash = parsingrule_tostr(rule) + &pid;
     let cachev = cache_view(s.len(), &rulehash);
     if let Err(true) = cachev {
-        return None;
+        return Err(ParseError::from_len(0));
     }
     else if let Ok(x) = cachev {
-        return Some(x);
+        return Ok(x);
     }
+    let mut err_expects = Vec::new();
 
     let mut expections = nexts(name, rule);
     let mut winners = Vec::new();
@@ -183,13 +185,13 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                                     }
                                 }
                                 let parsed = parse(&s[reading..], template.build(rules, t2), rules, dict);
-                                if let Some((stn, x)) = parsed {
+                                if let Ok((stn, x)) = parsed {
                                     expect.read(x);
                                     expect.next_rule();
                                     
                                     expect.push_category(stn);
                                 }
-                                else {
+                                else if let Err(perr) = parsed {\\
                                     expect.kill();
                                 }
                             }
