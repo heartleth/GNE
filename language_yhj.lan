@@ -1,0 +1,61 @@
+PART main
+    RULE code   나는-t 이홍에게-t 이렇게-t 말했다.-t $Block
+END
+
+PART Statement
+    RULE push       $Stack 잊지-t 못하는-t 것은-t $Expression 잊는-t 데서-t 연유한다.-t
+    RULE pop        $Stack 잊는다.-t
+
+    RULE whileneq   그렇다면-t $Expression 잊고-t $Expression 잊는-t 것이-t 병이-t 아니라고-t 치자.-t $Block 그-t 말이-t 옳을까?-t
+    RULE whileeq    그렇다면-t $Expression 잊고-t $Expression 잊는-t 것이-t 병이라고-t 치자.-t $Block 그-t 말이-t 옳을까?-t
+
+    RULE stdouti    $Stack 잊으면-t 하늘이-t 잊지-t 못해-t 벌을-t 내린다.-t
+    RULE stdouta    $Stack 잊으면-t 하늘이-t 잊어-t 벌을-t 내리지-t 않는다.-t
+    RULE stdini     $Stack 잊으면-t 남들이-t 잊지-t 못해-t 질시의-t 눈길을-t 보낸다.-t
+    RULE stdina     $Stack 잊으면-t 귀신이-t 잊지-t 못해-t 재앙을-t 내린다.-t
+
+    RULE swap       $Stack 잊지-t 못하고,-t $Stack 잊지-t 못하는-t 사람은-t 내적인-t 것과-t 외적인-t 것을-t 서로-t 바꿀-t 능력이-t 있다.-t
+    RULE psw        $Stack 잊지-t 못하고,-t $Stack 잊는-t 사람은-t 내적인-t 것과-t 외적인-t 것을-t 서로-t 바꿀-t 능력이-t 있다.-t
+END
+
+PART Block
+    RULE block      |>$Statement
+END
+
+PART Stack
+    RULE s0 어버이에게는-t 효심을-t
+    RULE s1 임금에게는-t 충성심을-t
+    RULE s2 부모를-t 잃고서는-t 슬픔을-t
+    RULE s3 제사를-t 지내면서-t 정성스러운-t 마음을-t
+    RULE s4 물건을-t 주고받을-t 때-t 의로움을-t
+    RULE s5 나아가고-t 물러갈-t 때-t 예의를-t
+    RULE s6 낮은-t 지위에-t 있으면서-t 제-t 분수를-t
+    RULE s7 이해의-t 갈림길에서-t 지켜야-t 할-t 도리를-t
+END
+
+PART Numeric
+    RULE n0 잊지-t 말아야-t 할-t 것을-t
+    RULE n1 잊어도-t 좋을-t 것을-t
+    RULE n2 눈은-t 아름다움을-t
+    RULE n3 귀는-t 좋은-t 소리를-t
+    RULE n4 입은-t 맛난-t 음식을-t
+    RULE n5 사는-t 곳은-t 크고-t 화려한-t 집을-t
+    RULE n6 천한-t 신분인데도-t 큰-t 세력을-t
+    RULE n7 집이-t 가난하건만-t 재물을-t
+    RULE n8 고귀한데도-t 교만한-t 짓을-t
+    RULE n9 부유한데도-t 인색한-t 짓을-t
+END
+
+PART Expression
+    RULE num    $Numeric
+    RULE st     $Stack
+    
+    IF :0 0
+        RULE add    $Expression( 1 ) 잊으며,-t $Expression( 0 )
+        RULE sub    $Expression( 1 ) 잊지-t 못하며,-t $Expression( 0 )
+    END
+    UNLESS :0 2
+        RULE mul    $Expression( 2 ) 잊고,-t 도리어-t $Expression( 1 )
+        RULE div    $Expression( 2 ) 잊지-t 못하고,-t 도리어-t $Expression( 1 )
+    END
+END

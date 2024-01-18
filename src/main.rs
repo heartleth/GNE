@@ -13,7 +13,7 @@ use std::env;
 fn main() -> PyResult<()> {
     let h = read_to_string("lang.py").unwrap();
     let args :Vec<String> = env::args().collect();
-    let c = "example.yhj".to_string();
+    let c = "증세없는복지.ㄹ".to_string();
     let filename = args.get(1).unwrap_or(&c);
     
     Parser::open("language.lan", "dictionary.dic").unwrap().context(|lan| {
