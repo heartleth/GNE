@@ -12,20 +12,6 @@ use std::collections::HashMap;
 pub type PhraseRulesCollection<'p> = &'p HashMap<&'p str, PhraseContext<'p>>;
 pub type ParsingRule<'p> = &'p [TemplateNode<'p>];
 
-#[derive(Clone)]
-pub struct ParseError<'p> {
-    pub len :usize,
-    pub expected :Vec<&'p str>
-}
-
-impl<'p> ParseError<'p> {
-    fn from_len(l :usize) -> ParseError<'static> {
-        ParseError {
-            len: l, expected: Vec::new()
-        }
-    }
-}
-
 static mut PARSE_DP :Option<HashMap<(usize, String), Option<(SyntaxTreeNode, usize)>>> = None;
 
 pub fn init_parse() {
@@ -44,12 +30,12 @@ pub fn trim_front_iter<'t>(s :&'t [char])->(&'t [char], usize) {
     (&s[i..], i)
 }
 
-pub fn parse<'p, 't>(s :&'t [char], part :ConcretePart<'t, 'p>, rules :PhraseRulesCollection<'p>, dict :&Dictionary<'p>) -> Result<(SyntaxTreeNode, usize), ParseError<'p>> {
+pub fn parse<'p, 't>(s :&'t [char], part :ConcretePart<'t, 'p>, rules :PhraseRulesCollection<'p>, dict :&Dictionary<'p>) -> Option<(SyntaxTreeNode, usize)> {
     let key = (s.len(), part.id.clone());
     unsafe {
         if let Some(k) = &PARSE_DP {
             if let Some(x) = k.get(&key) {
-                return x.clone().ok_or(ParseError::from_len(0));
+                return x.clone();
             }
         }
     }
@@ -60,14 +46,17 @@ pub fn parse<'p, 't>(s :&'t [char], part :ConcretePart<'t, 'p>, rules :PhraseRul
     let mut mp = None;
     for r in part.rules {
         // println!("{}", fit_rules::parsingrule_tostr(&r.rules));
-        // println!("{:40} : {}", part.id, &String::from_iter(s)[..].replace("\n", "\\n"));
+        // println!("{:20}{:10} : {}", part.id, r.name, &String::from_iter(s)[..].replace("\n", "\\n"));
         // if let Some((morphemes, x)) = fit_rules::fit_rules(&s2, &format!("{}@{}", part.part.name, r.name)[..], &r.rules, rules, dict, &part.cargs, &part.id) {
-        let res = fit_rules::fit_rules(&s, &format!("{}@{}", part.part.name, r.name)[..], &r.rules, rules, dict, &part.cargs, &part.id, r.allow_whitespace);
-        if let Some((morphemes, x)) = res {
+        if let Some((morphemes, x)) = fit_rules::fit_rules(&s, &format!("{}@{}", part.part.name, r.name)[..], &r.rules, rules, dict, &part.cargs, &part.id, r.allow_whitespace) {
             if x + trims > m {
                 mp = Some(morphemes);
                 m = x + trims;
             }
+            // println!("Success");
+        }
+        else {
+            // println!("Fail");
         }
     }
 
@@ -77,7 +66,7 @@ pub fn parse<'p, 't>(s :&'t [char], part :ConcretePart<'t, 'p>, rules :PhraseRul
                 k.insert((s.len(), part.id), None);
             }
         }
-        return Err();
+        return None;
     }
     else {
         unsafe {

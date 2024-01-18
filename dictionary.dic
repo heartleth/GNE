@@ -8,8 +8,20 @@ PART particles
 PART mul
 *
 
+PART incd
+.
+
+PART decd
+,
+
+PART eo
+어
+
 PART t
 "
+
+PART q
+?
 
 PART numbers
 0

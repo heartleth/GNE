@@ -38,12 +38,20 @@ impl<'p> Expectation<'p> {
         }
     }
 
+    pub fn next_rule_f(&mut self) {
+        self.rule = &self.rule[1..];
+    }
+
     pub fn take_tree(&mut self) -> SyntaxTreeNode {
         self.tree.take().unwrap()
     }
     
     pub fn read(&mut self, amount :usize) {
         self.reading += amount;
+    }
+    
+    pub fn unread(&mut self, amount :usize) {
+        self.reading -= amount;
     }
     
     pub fn register_attr(&mut self, attr :&'p Vec<&'p str>) {

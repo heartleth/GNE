@@ -7,7 +7,6 @@ use std::collections::HashMap;
 pub use expect::Expectation;
 use super::SyntaxTreeNode;
 use super::ParsingRule;
-use super::ParseError;
 use expect::nexts;
 use super::parse;
 
@@ -61,19 +60,19 @@ fn cache_register(l :usize, rulehash :String, tree :Option<(SyntaxTreeNode, usiz
     }
 }
 
-pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, rules :PhraseRulesCollection<'p>, dict :&'p Dictionary<'p>, cargs :&Vec<&'p str>, pid :&str, allow_ws :bool) -> Result<(SyntaxTreeNode, usize), ParseError<'p>> {
+pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, rules :PhraseRulesCollection<'p>, dict :&'p Dictionary<'p>, cargs :&Vec<&'p str>, pid :&str, allow_ws :bool) -> Option<(SyntaxTreeNode, usize)> {
     let rulehash = parsingrule_tostr(rule) + &pid;
     let cachev = cache_view(s.len(), &rulehash);
     if let Err(true) = cachev {
-        return Err(ParseError::from_len(0));
+        return None;
     }
     else if let Ok(x) = cachev {
-        return Ok(x);
+        return Some(x);
     }
-    let mut err_expects = Vec::new();
 
     let mut expections = nexts(name, rule);
     let mut winners = Vec::new();
+    let mut trims;
     while !expections.is_empty() {
         for expect in &mut expections {
             let reading = expect.reading;
@@ -86,11 +85,13 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                     let mut has_ws = false;
                     let mut did_nl = false;
                     let untrimmed_reading = expect.reading;
+                    trims = 0;
                     while s[expect.reading] == ' ' || s[expect.reading] == '\r' || s[expect.reading] == '\n' || s[expect.reading] == '\t' {
                         if s[expect.reading] == '\n' {
                             did_nl = true;
                         }
                         expect.read(1);
+                        trims += 1;
                         has_ws = true;
                     }
                     let reading = expect.reading;
@@ -111,7 +112,13 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                         },
                         ShortPart(p) => {
                             if !allow_ws && has_ws {
-                                expect.kill();
+                                if false && (expect.reading > 0 && (prule.is_free || prule.is_optional)) {
+                                    expect.unread(trims);
+                                    expect.next_rule_f();
+                                }
+                                else {
+                                    expect.kill();
+                                }
                             }
                             else if p.part_name == "nl" {
                                 if did_nl {
@@ -185,13 +192,13 @@ pub fn fit_rules<'p, 't>(s :&'t [char], name :&'p str, rule :ParsingRule<'p>, ru
                                     }
                                 }
                                 let parsed = parse(&s[reading..], template.build(rules, t2), rules, dict);
-                                if let Ok((stn, x)) = parsed {
+                                if let Some((stn, x)) = parsed {
                                     expect.read(x);
                                     expect.next_rule();
                                     
                                     expect.push_category(stn);
                                 }
-                                else if let Err(perr) = parsed {\\
+                                else {
                                     expect.kill();
                                 }
                             }

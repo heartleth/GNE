@@ -1,0 +1,37 @@
+PART main
+    RULE code       어떻게-t $Body 이-t 사람이름이냐ㅋㅋ-t
+END
+
+PART Body
+    RULE stmt       |>$Statement
+END
+
+PART Statement
+    RULE umm        =>어-u 엄-um $Expression
+    
+    RULE jun        준-t $Expression
+
+    RULE siki       =>어-u 엄-um 식?-t
+    RULE siko       식-t $Expression !-e
+    RULE sika       식-t $Expression ㅋ-t
+    RULE sikk       식ㅋ-t
+    RULE fight      화이팅!-t $Expression
+    
+    UNLESS :0 nd
+        RULE dongtan    동탄-t $Expression *q $Statement( nd )
+    END
+END
+
+PART Expression
+    RULE exp        |>$DU
+END
+
+PART DU
+    DENSE exp       |>$Unitary
+END
+
+PART Unitary
+    DENSE inc       |>*incd
+    DENSE dec       |>*decd
+    DENSE uuu       |>*eo
+END

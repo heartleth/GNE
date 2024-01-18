@@ -1,158 +1,89 @@
-strpass = {
-    'Expression@sl',
-    'Expression@i',
-    'Integer@i'
-}
+strpass = { '' }
 
 class main:
-    def m(*ts):
-        code = ''.join(str(t()) for t in ts)
-        open('l.js', 'w').write(code)
-        print(code)
+    def code(*t):
+        p='let stack=[[],[],[],[],[],[],[],[],[],[],[]];let tmp;'
+        open('l.js', 'w').write(p+t[-1]())
 
-class Expression:
-    def next(x):
-        return str(x())
-    def ki(x):
-        return str(x())
-    def zv(x):
-        return str(x())
-    def true(x):
-        return 'true'
-    def false(x):
-        return 'false'
-    def new(_, cname, __, *el):
-        if len(el) == 2:
-            return 'new C_'+ cname() + '(' + el[0]() + ')'
-        else:
-            return 'new C_'+ cname() + '()'
-    def p(_, x, __):
-        return '(' + x() + ')'
-    def assigna(_, a, _1, _2, _3, b):
-        return f'{a()} = {b()}'
-    def assignb(a, _, __, b):
-        return f'{a()} = {b()}'
-    def assignc(a, _, b):
-        return f'{a()} = {b()}'
-    def add(a, _, b):
-        return f'{a()} + {b()}'
-    def eq(a, _, b):
-        return f'{a()} == {b()}'
-    def gt(a, _, b):
-        return f'{a()} > {b()}'
-    def lt(a, _, b):
-        return f'{a()} < {b()}'
-    def mul(a, _, b):
-        return f'{a()} * {b()}'
-    def arridx(a, _, b):
-        return f'{a()}[{b()}]'
-    def fcall(a, _, b, __):
-        return f'{a()}({b()})'
-    def pos(a, _, b):
-        return f'{a()}.{b()}'
-    def ui(a, _):
-        return a() + '++'
-
-class ExpressionList:
-    def se(exp):
-        return exp()
-    def exps(a, _, b):
-        return a() + ', ' + b()
-
-class ImportName:
-    def name(exp):
-        return exp()
-    def names(a, _, b):
-        return a() + '.' + b()
-
-class ParameterList:
-    def sl(exp):
-        return exp()
-    def params(a, _, b):
-        return a() + ', ' + b()
-
-class Ident:
-    def name(*chars):
-        s = ''.join(str('_' if c() == '-' else c()) for c in chars)
-        s = s.replace('법', '목욕탕')
-        objdict = {
-            '콘솔': 'console',
-            '로그': 'log'
-        }
-        if s in objdict.keys():
-            return objdict[s]
-        else:
-            return s
-
-class KIdent:
-    def name(k, _, i):
-        return 'K_' + i()
-
-class FunctionDefinition:
-    def deff(_, _1, _2, _3, funcname, _4, _5, _6, params, _7, body):
-        return f'function {funcname()}({params()}) {body()}'
-
+class Block:
+    def block(*ts):
+        return ''.join(str(t()) for t in ts)
+    
 class Statement:
-    def ifs(_, _1, exp, _2, s, *l):
-        return f'if ({exp()}) {s()}' + ''.join(t() for t in l)
-    def whiles(_, _1, exp, _2, s):
-        return f'while ({exp()}) {s()}'
-    def exp(*s):
-        return s[0]() + ';'
-    def var(_, name, _1, _2, exp, _3):
-        return 'var ' + name() + ' = ' + exp() + ';'
-    def expect(_, _0, _1, _2, _3, _4, _5, block1, _6, _7, _8, _9, block2):
-        return 'try ' + block1() + 'catch(e)' + block2()
-    def itscat(*a):
-        return ''
-    def acomplete(*a):
-        return 'break;'
-    def exit(*c):
-        return 'process.exit();'
-    def comment(*c):
-        return ''
-
-class Else:
-    def elses(_, s):
-        return f'else {s()}'
-
-class TopStatement:
-    def a_society(*s):
-        return s[-1]()
-    def z_struct(_, name, block):
-        return 'class C_' + name() + block()
-    def imports(_, name):
-        return 'import ' + name() + '.'
-    def fdef(fd):
-        return fd()
-    def comment(*c):
-        return ''
-
-class Statements:
-    def sts(*s):
-        return ''.join([str(t()) for t in s])
-
-class StatementBlock:
-    def block(*s):
-        if len(s) == 2:
-            return '{}'
-        elif len(s) == 3:
-            return '{' + s[1]() + '}'
-
-class ClassSpecifyBlock:
-    def b(*m):
-        return '{constructor(){' + ''.join(str(t()) for t in m[1:-1]) + '}}'
-
-class Members:
-    def vari(_, name, _1, _2, exp):
-        return 'this.' + name() + ' = ' + exp() + ';'
-    def varl(_, name, __):
-        return 'this.' + name() + '=[];'
-    def var(_, name, __):
-        return 'this.' + name() + '=0;'
-    def comment(*c):
-        return ''
-
-class Comment:
-    def cmt(*s):
-        return ''
+    def push(st, _, _1, _2, exp, *_3):
+        return st() + '.push(' + exp() + ');'
+    def pop(st, *_):
+        return st() + '.pop();'
+    def whileneq(_, a, _1, b, *t):
+        return f'while ({a()} != {b()})' + '{' + t[-4]() + '}'
+    def whileeq(_, a, _1, b, *t):
+        return f'while ({a()} == {b()})' + '{' + t[-4]() + '}'
+    def stdouti(s, *_):
+        st = s()
+        return 'if(' + st + '.length==0){process.stdout.write("\\n");}else{process.stdout.write(`${' + st + '[' + st + '.length-1]}`);' + st + '.pop();}'
+    def stdouta(s, *_):
+        st = s()
+        return 'if(' + st + '.length==0){process.stdout.write("\\n");}else{process.stdout.write(String.fromCharCode(' + st + '[' + st + '.length-1]));' + st + '.pop();}'
+    def swap(a, _, _1, b, *_2):
+        av = a()
+        bv = b()
+        return f'tmp={av}[{av}.length-1];{av}[{av}.length-1]={bv}[{bv}.length-1];{bv}[{bv}.length-1]=tmp;'
+    def psw(a, _, _1, b, *_2):
+        av = a()
+        bv = b()
+        return f'{bv}.push({av}[{av}.length-1]);'
+    
+class Stack:
+    def s0(*_):
+        return 'stack[0]'
+    def s1(*_):
+        return 'stack[1]'
+    def s2(*_):
+        return 'stack[2]'
+    def s3(*_):
+        return 'stack[3]'
+    def s4(*_):
+        return 'stack[4]'
+    def s5(*_):
+        return 'stack[5]'
+    def s6(*_):
+        return 'stack[6]'
+    def s7(*_):
+        return 'stack[7]'
+    
+class Numeric:
+    def n0(*_):
+        return '0'
+    def n1(*_):
+        return '1'
+    def n2(*_):
+        return '2'
+    def n3(*_):
+        return '3'
+    def n4(*_):
+        return '4'
+    def n5(*_):
+        return '5'
+    def n6(*_):
+        return '6'
+    def n7(*_):
+        return '7'
+    def n8(*_):
+        return '8'
+    def n9(*_):
+        return '9'
+    
+class Expression:
+    def num(n):
+        return n()
+    def st(n):
+        st = n()
+        return st + '[' + st + '.length-1]'
+    def add(*tk):
+        return '(' + tk[0]() + '+' + tk[-1]() + ')'
+    def sub(*tk):
+        return '(' + tk[0]() + '-' + tk[-1]() + ')'
+    def mul(*tk):
+        return '(' + tk[0]() + '*' + tk[-1]() + ')'
+    def div(*tk):
+        return '(' + tk[0]() + '/' + tk[-1]() + ')'
